@@ -349,7 +349,7 @@ const updateVideo = asyncHandler(async (req, res) => {
 const getWatchHistory = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user?._id)
     let videoIds = user?.watchHistory || [];
-    if (!videoIds.length) throw new ApiError(404, 'No watch history found');
+    if (!videoIds.length) return res.status(200).json(new ApiResponse(200, {}, 'No watch history yet'))
     videoIds = videoIds
     .filter(id => mongoose.Types.ObjectId.isValid(id))
     .map(id => new mongoose.Types.ObjectId(id));
