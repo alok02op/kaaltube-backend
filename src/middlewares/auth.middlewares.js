@@ -22,8 +22,9 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
                 const options = {
                     httpOnly: true,
                     secure: true,
-                    sameSite: "Strict",
-                }
+                    sameSite: "none",
+                    path: "/"
+                };
                 res
                 .cookie("accessToken", accessToken, options)
                 .cookie("refreshToken", refreshToken, options)

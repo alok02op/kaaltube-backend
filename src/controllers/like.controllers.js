@@ -50,7 +50,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
     .lean();
 
     if (!likes || likes.length === 0) {
-        return res.status(200).json(new ApiResponse(200, {}, 'No liked videos yet'))
+        return res.status(200).json(new ApiResponse(200, [], 'No liked videos yet'))
     };
     const videoIds = likes.map(like => like.video);
 
