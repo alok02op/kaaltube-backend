@@ -116,10 +116,12 @@ const loginUser = asyncHandler(async (req, res) => {
     
     // send cookies
     const options = {
-        httpOnly : true,
-        secure : true,
-        sameSite: "Strict",
-    }
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        path: "/"
+    };
+
 
     return res
     .status(200)
