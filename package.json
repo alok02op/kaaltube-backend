@@ -28,6 +28,7 @@
     "mongoose": "^8.16.0",
     "mongoose-aggregate-paginate-v2": "^1.1.4",
     "multer": "^2.0.1",
-    "nodemailer": "^7.0.12"
+    "nodemailer": "^7.0.12",
+    "resend": "^6.8.0"
   }
 }

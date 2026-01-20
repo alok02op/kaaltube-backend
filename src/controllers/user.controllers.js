@@ -4,7 +4,7 @@ import {
     ApiResponse,
     getCloudinaryUrl,
     deleteFromCloudinary,
-    sendEmailWithTimeout
+    sendEmail
 } from '../utils/index.js'
 import { User } from "../models/index.js";
 import bcrypt from "bcrypt";
@@ -58,17 +58,13 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User with email or username already exist")
     }
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    try {
-        await sendEmailWithTimeout({
-            to: user.email,
-            subject: "OTP",
-            text: `Your OTP is ${otp}`
-        });
-    } catch (err) {
-        console.log("hi alok ", err)
-        throw new ApiError(400, err.message);
-    }
     
+    await sendEmail({
+        to: user.email,
+        subject: "Your Kaaltube OTP",
+        text: `Your OTP is ${otp}`
+    });
+
     // create user object - create entry in db
     const user = await User.create({
         fullName,
@@ -83,7 +79,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const hashedOtp = await bcrypt.hash(otp, 10);
     user.otp = hashedOtp;
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
-    
+
     await user.save();
 
     return res.status(201).json(
