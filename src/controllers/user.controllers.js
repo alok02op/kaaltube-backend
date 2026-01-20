@@ -4,7 +4,7 @@ import {
     ApiResponse,
     getCloudinaryUrl,
     deleteFromCloudinary,
-    sendEmail
+    sendEmailWithTimeout
 } from '../utils/index.js'
 import { User } from "../models/index.js";
 import bcrypt from "bcrypt";
@@ -73,7 +73,7 @@ const registerUser = asyncHandler(async (req, res) => {
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
 
     try {
-        await sendEmail({
+        await sendEmailWithTimeout({
             to: user.email,
             subject: "OTP",
             text: `Your OTP is ${otp}`

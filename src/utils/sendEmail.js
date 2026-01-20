@@ -8,7 +8,10 @@ export const sendEmail = async ({ to, subject, text }) => {
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
-    }
+    },
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 10_000 
   });
 
   await transporter.sendMail({
@@ -18,3 +21,11 @@ export const sendEmail = async ({ to, subject, text }) => {
     text
   });
 };
+
+export const sendEmailWithTimeout = (data, ms = 12000) =>
+  Promise.race([
+    sendEmail(data),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error("Email timeout")), ms)
+    )
+]);
