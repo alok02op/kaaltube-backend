@@ -3,9 +3,11 @@ import {
     ApiError, 
     ApiResponse,
     getCloudinaryUrl,
-    deleteFromCloudinary
+    deleteFromCloudinary,
+    sendEmail
 } from '../utils/index.js'
 import { User } from "../models/index.js";
+import bcrypt from "bcrypt";
 
 function isValidEmail(email) {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -56,16 +58,30 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "User with email or username already exist")
     }
     // create user object - create entry in db
-    await User.create({
+    const user = await User.create({
         fullName,
         username,
         email : email.toLowerCase(),
         avatar,
         coverImage: coverImage || null,
-        password
+        password,
+        isVerified: false
     })
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = await bcrypt.hash(otp, 10);
+    user.otp = hashedOtp;
+    user.otpExpiry = Date.now() + 10 * 60 * 1000;
+
+    await sendEmail({
+        to: user.email,
+        subject: "Kaaltube Email Verification",
+        text: `Your OTP is ${user.otp}. It expires in 10 minutes.`
+    })
+
+    await user.save();
+
     return res.status(201).json(
-        new ApiResponse(201, true, "User registered successfully.")
+        new ApiResponse(201, {userId: user._id}, "User registered. OTP generated.")
     )
 })
 
@@ -83,6 +99,8 @@ const loginUser = asyncHandler(async (req, res) => {
         $or : [{ username }, { email }]
     })
     if (!user) throw new ApiError(404, "User is not registered");
+
+    if (!user.isVerified) throw new ApiError(403, "Please verify your email before logging in");
 
     // password check
     const isPasswordValid = await user.isPasswordCorrect(password);
@@ -362,6 +380,88 @@ const getImageUrl = asyncHandler(async (req, res) => {
 
 })
 
+const verifyOtp = asyncHandler(async (req, res) => {
+    const { userId, otp } = req.body;
+
+    if (!userId || !otp) {
+        throw new ApiError(400, "UserId and OTP are required");
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    if (user.isVerified) {
+        return res.status(200).json(
+            new ApiResponse(200, true, "User already verified")
+        );
+    }
+
+    if (!user.otp || !user.otpExpiry) {
+        throw new ApiError(400, "OTP not found. Please request again.");
+    }
+
+    if (Date.now() > user.otpExpiry) {
+        throw new ApiError(400, "OTP expired. Please request a new one.");
+    }
+
+    const isOtpValid = await bcrypt.compare(otp, user.otp);
+
+    if (!isOtpValid) {
+        throw new ApiError(400, "Invalid OTP");
+    }
+
+    // VERIFIED
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpiry = undefined;
+
+    await user.save();
+
+    return res.status(200).json(
+        new ApiResponse(200, true, "Email verified successfully")
+    );
+});
+
+const resendOtp = asyncHandler(async (req, res) => {
+    const { userId } = req.body;
+
+    if (!userId) {
+        throw new ApiError(400, "UserId is required");
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new ApiError(404, "User not found");
+    }
+
+    if (user.isVerified) {
+        throw new ApiError(400, "User already verified");
+    }
+
+    // generate new OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.otp = otp;
+    user.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 min
+    await user.save();
+
+    // send email
+    await sendEmail({
+        to: user.email,
+        subject: "Kaaltube Email Verification (Resend)",
+        text: `Your new OTP is ${otp}. It expires in 10 minutes.`
+    });
+
+    return res.status(200).json(
+        new ApiResponse(200, true, "OTP resent successfully")
+    );
+});
+
+
 export { 
     registerUser, 
     loginUser, 
@@ -372,5 +472,7 @@ export {
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
-    getImageUrl
+    getImageUrl,
+    verifyOtp,
+    resendOtp
 };

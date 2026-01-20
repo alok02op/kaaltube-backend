@@ -8,6 +8,7 @@ import {
 } from './cloudinary.js'
 import { verifyId } from "./verifyId.js";
 import { toggleLike } from './toggleLike.js'
+import { sendEmail } from "./sendEmail.js";
 
 export {
     ApiError,
@@ -17,5 +18,6 @@ export {
     deleteFromCloudinary,
     getCloudinaryUrl,
     verifyId,
-    toggleLike
+    toggleLike,
+    sendEmail
 }

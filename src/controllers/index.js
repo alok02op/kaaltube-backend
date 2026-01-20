@@ -8,7 +8,9 @@ import {
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
-    getImageUrl
+    getImageUrl,
+    verifyOtp,
+    resendOtp
 } from "./user.controllers.js";
 
 import {
@@ -84,5 +86,7 @@ export {
     getChannelProfile,
     getUserChannelProfile,
     searchAll,
-    searchSuggestions
+    searchSuggestions,
+    verifyOtp,
+    resendOtp
 }

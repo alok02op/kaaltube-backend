@@ -50,8 +50,20 @@ const userSchema = new Schema({
 
     refreshToken : {
         type : String
-    }
+    },
 
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+
+    otp: {
+        type: String
+    },
+
+    otpExpiry: {
+        type: Date
+    }
 }, {timestamps : true})
 
 userSchema.pre("save", async function (next) {

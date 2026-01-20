@@ -9,7 +9,9 @@ import {
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
-    getImageUrl
+    getImageUrl,
+    verifyOtp,
+    resendOtp
 } from "../controllers/index.js";
 
 const router = Router();
@@ -17,6 +19,8 @@ const router = Router();
 router.route("/register").post(registerUser)
 router.route("/login").post(loginUser)
 router.route('/get-image-url').post(getImageUrl)
+router.route('/verify-otp').post(verifyOtp)
+router.route('/resend-otp').post(resendOtp)
 
 // secured routes
 router.route("/logout").post(verifyJWT, logoutUser)
