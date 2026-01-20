@@ -57,21 +57,7 @@ const registerUser = asyncHandler(async (req, res) => {
     if (existedUser) {
         throw new ApiError(409, "User with email or username already exist")
     }
-    // create user object - create entry in db
-    const user = await User.create({
-        fullName,
-        username,
-        email : email.toLowerCase(),
-        avatar,
-        coverImage: coverImage || null,
-        password,
-        isVerified: false
-    })
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const hashedOtp = await bcrypt.hash(otp, 10);
-    user.otp = hashedOtp;
-    user.otpExpiry = Date.now() + 10 * 60 * 1000;
-
     try {
         await sendEmailWithTimeout({
             to: user.email,
@@ -82,7 +68,22 @@ const registerUser = asyncHandler(async (req, res) => {
         console.log("hi alok ", err)
         throw new ApiError(400, err.message);
     }
-
+    
+    // create user object - create entry in db
+    const user = await User.create({
+        fullName,
+        username,
+        email : email.toLowerCase(),
+        avatar,
+        coverImage: coverImage || null,
+        password,
+        isVerified: false
+    })
+    
+    const hashedOtp = await bcrypt.hash(otp, 10);
+    user.otp = hashedOtp;
+    user.otpExpiry = Date.now() + 10 * 60 * 1000;
+    
     await user.save();
 
     return res.status(201).json(
