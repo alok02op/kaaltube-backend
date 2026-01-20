@@ -72,11 +72,16 @@ const registerUser = asyncHandler(async (req, res) => {
     user.otp = hashedOtp;
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
 
-    await sendEmail({
-        to: user.email,
-        subject: "Kaaltube Email Verification",
-        text: `Your OTP is ${user.otp}. It expires in 10 minutes.`
-    })
+    try {
+        await sendEmail({
+            to: user.email,
+            subject: "OTP",
+            text: `Your OTP is ${otp}`
+        });
+    } catch (err) {
+        console.log("hi alok ", err)
+        throw new ApiError(400, err.message);
+    }
 
     await user.save();
 
