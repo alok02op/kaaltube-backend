@@ -57,14 +57,7 @@ const registerUser = asyncHandler(async (req, res) => {
     if (existedUser) {
         throw new ApiError(409, "User with email or username already exist")
     }
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     
-    await sendEmail({
-        to: user.email,
-        subject: "Your Kaaltube OTP",
-        text: `Your OTP is ${otp}`
-    });
-
     // create user object - create entry in db
     const user = await User.create({
         fullName,
@@ -76,12 +69,18 @@ const registerUser = asyncHandler(async (req, res) => {
         isVerified: false
     })
     
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedOtp = await bcrypt.hash(otp, 10);
     user.otp = hashedOtp;
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
-
     await user.save();
-
+    
+    await sendEmail({
+        to: user.email,
+        subject: "Your Kaaltube OTP",
+        text: `Your OTP is ${otp}`
+    });
+    
     return res.status(201).json(
         new ApiResponse(201, {userId: user._id}, "User registered. OTP generated.")
     )
