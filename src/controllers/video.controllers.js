@@ -119,7 +119,7 @@ const getAllUserVideos = asyncHandler(async (req, res) => {
 })
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const videos = await Video.find({isPublished: true})
+    const videos = await Video.find({isPublished: true, owner: { $ne: null }})
         .sort({ createdAt: -1 })
         .limit(50)
         .populate("owner", "username fullName avatar")
