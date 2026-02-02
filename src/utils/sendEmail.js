@@ -9,7 +9,7 @@ apiInstance.setApiKey(
 export const sendEmail = async ({ to, subject, text, html }) => {
   await apiInstance.sendTransacEmail({
     sender: {
-      email: "no-reply@brevo.com",
+      email: "alok27032003@gmail.com",
       name: "Kaaltube",
     },
     to: [{ email: to }],
