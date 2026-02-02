@@ -1,21 +1,20 @@
-import nodemailer from "nodemailer";
+import Brevo from "@getbrevo/brevo";
 
-const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: "apikey",
-    pass: process.env.BREVO_API_KEY,
-  },
-});
+const apiInstance = new Brevo.TransactionalEmailsApi();
+apiInstance.setApiKey(
+  Brevo.TransactionalEmailsApiApiKeys.apiKey,
+  process.env.BREVO_API_KEY
+);
 
 export const sendEmail = async ({ to, subject, text, html }) => {
-  await transporter.sendMail({
-    from: "Kaaltube <no-reply@brevo.com>",
-    to,
+  await apiInstance.sendTransacEmail({
+    sender: {
+      email: "no-reply@brevo.com",
+      name: "Kaaltube",
+    },
+    to: [{ email: to }],
     subject,
-    text,
-    html,
+    textContent: text,
+    htmlContent: html,
   });
 };
