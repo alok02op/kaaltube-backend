@@ -74,13 +74,14 @@ const registerUser = asyncHandler(async (req, res) => {
     user.otp = hashedOtp;
     user.otpExpiry = Date.now() + 10 * 60 * 1000;
     await user.save();
-    
+
     await sendEmail({
         to: user.email,
-        subject: "Your Kaaltube OTP",
-        text: `Your OTP is ${otp}`
+        subject: "Kaaltube OTP",
+        text: `Your OTP is ${otp}. Valid for 5 minutes.`,
+        html: `<h2>${otp}</h2><p>Valid for 5 minutes</p>`,
     });
-    
+
     return res.status(201).json(
         new ApiResponse(201, {userId: user._id}, "User registered. OTP generated.")
     )
@@ -453,15 +454,15 @@ const resendOtp = asyncHandler(async (req, res) => {
     // send email
     await sendEmail({
         to: user.email,
-        subject: "Kaaltube Email Verification (Resend)",
-        text: `Your new OTP is ${otp}. It expires in 10 minutes.`
+        subject: "Kaaltube OTP",
+        text: `Your OTP is ${otp}. Valid for 5 minutes.`,
+        html: `<h2>${otp}</h2><p>Valid for 5 minutes</p>`,
     });
 
     return res.status(200).json(
         new ApiResponse(200, true, "OTP resent successfully")
     );
 });
-
 
 export { 
     registerUser, 

@@ -1,12 +1,21 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: "apikey",
+    pass: process.env.BREVO_API_KEY,
+  },
+});
 
-export const sendEmail = async ({ to, subject, text }) => {
-  await resend.emails.send({
-    from: "Kaaltube <onboarding@resend.dev>",
+export const sendEmail = async ({ to, subject, text, html }) => {
+  await transporter.sendMail({
+    from: "Kaaltube <no-reply@brevo.com>",
     to,
     subject,
-    text
+    text,
+    html,
   });
 };
