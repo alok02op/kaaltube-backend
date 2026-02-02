@@ -79,7 +79,7 @@ const registerUser = asyncHandler(async (req, res) => {
         to: user.email,
         subject: "Kaaltube OTP",
         text: `Your OTP is ${otp}. Valid for 5 minutes.`,
-        html: `<h2>${otp}</h2><p>Valid for 5 minutes</p>`,
+        html: `<div>Your OTP is <h2>${otp}</h2>. Valid for 5 minutes.</div>`,
     });
 
     return res.status(201).json(
@@ -446,8 +446,9 @@ const resendOtp = asyncHandler(async (req, res) => {
 
     // generate new OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    user.otp = otp;
+    
+    const hashedOtp = await bcrypt.hash(otp, 10);
+    user.otp = hashedOtp;
     user.otpExpiry = Date.now() + 10 * 60 * 1000; // 10 min
     await user.save();
 
@@ -456,7 +457,7 @@ const resendOtp = asyncHandler(async (req, res) => {
         to: user.email,
         subject: "Kaaltube OTP",
         text: `Your OTP is ${otp}. Valid for 5 minutes.`,
-        html: `<h2>${otp}</h2><p>Valid for 5 minutes</p>`,
+        html: `<div>Your OTP is <h2>${otp}</h2>. Valid for 5 minutes.</div>`,
     });
 
     return res.status(200).json(
